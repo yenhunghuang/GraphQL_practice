@@ -4,21 +4,69 @@ const {
     GraphQLObjectType,
     GraphQLString,
     GraphQLID,
+    GraphQLList,
+    GraphQLScalarType,
+    Kind,
+    GraphQLNonNull,
+    GraphQLInterfaceType,
 } = require("graphql");
+
+// Custom DateType scalar
+const DateType = new GraphQLScalarType({
+    name: "Date",
+    description: "Date custom scalar type",
+    parseValue(value) {
+        return new Date(value); // Convert incoming integer to Date
+    },
+    serialize(value) {
+        return value.getTime(); // Convert outgoing Date to integer
+    },
+    parseLiteral(ast) {
+        if (ast.kind === Kind.INT) {
+            return new Date(parseInt(ast.value, 10)); // Convert hard-coded AST string to integer and then to Date
+        }
+        return null; // Invalid hard-coded value (not an integer)
+    },
+});
+
+// DateTimeInterface
+const DateTimeInterface = new GraphQLInterfaceType({
+    name: "DateTimeInterface",
+    fields: {
+        createdAt: { type: DateType },
+        updatedAt: { type: DateType },
+    },
+    resolveType(obj) {
+        if (obj.email) return "User";
+        // Add more conditions here for other types implementing this interface
+        return null;
+    },
+});
+
+const UserType = new GraphQLObjectType({
+    interfaces: [DateTimeInterface],
+    name: "User",
+    fields: {
+        id: { type: new GraphQLNonNull(GraphQLID) },
+        email: { type: GraphQLString },
+        friends: { type: new GraphQLList(GraphQLString) },
+        createdAt: { type: DateType },
+        updatedAt: { type: DateType },
+    },
+});
 
 const Schema = new GraphQLSchema({
     query: new GraphQLObjectType({
         name: "Query",
         fields: {
             user: {
-                type: new GraphQLObjectType({
-                    name: "User",
-                    fields: {
-                        id: { type: GraphQLID },
-                        email: {
-                            type: GraphQLString,
-                        },
-                    },
+                type: UserType,
+                resolve: () => ({
+                    id: "1",
+                    email: "user@example.com",
+                    friends: ["Alice", "Bob"],
+                    createdAt: new Date(2023, 0, 1),
+                    updatetedAt: new Date(),
                 }),
             },
         },
@@ -29,8 +77,11 @@ const Schema = new GraphQLSchema({
 const query = `
     query {
         user{
-        id,
-        email
+            id
+            email
+            friends
+            createdAt
+            updatedAt
         }
     }
 `;
