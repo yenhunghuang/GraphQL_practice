@@ -55,19 +55,23 @@ const UserType = new GraphQLObjectType({
     },
 });
 
+const user = {
+    id: "1",
+    email: "user@example.com",
+    friends: ["Alice", "Bob"],
+    createdAt: new Date(2023, 0, 1),
+    updatedAt: new Date(),
+};
+
 const Schema = new GraphQLSchema({
     query: new GraphQLObjectType({
         name: "Query",
         fields: {
             user: {
                 type: UserType,
-                resolve: () => ({
-                    id: "1",
-                    email: "user@example.com",
-                    friends: ["Alice", "Bob"],
-                    createdAt: new Date(2023, 0, 1),
-                    updatetedAt: new Date(),
-                }),
+                resolve: () => {
+                    return { ...user, id: 2 };
+                },
             },
         },
     }),
@@ -92,6 +96,8 @@ graphql({
 })
     .then((result) => {
         console.log("Result:", result);
+        console.log("Friends:", result.data.user.friends);
+        // console.log("Result:", JSON.stringify(result, null, 2));
     })
     .catch((error) => {
         console.error("Error:", error);
