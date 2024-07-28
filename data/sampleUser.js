@@ -1,4 +1,4 @@
-const user = {
+let user = {
     id: "1",
     email: "user@example.com",
     friends: ["Alice", "Bob"],
@@ -6,4 +6,10 @@ const user = {
     updatedAt: new Date(),
 };
 
-module.exports = user;
+module.exports = {
+    getUser: () => user,
+    updateUser: (newData) => {
+        user = { ...user, ...newData, updatedAt: new Date() };
+        return user;
+    },
+};
