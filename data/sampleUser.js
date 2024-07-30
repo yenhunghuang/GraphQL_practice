@@ -1,5 +1,6 @@
 let user = {
     id: "1",
+    name: "John Doe",
     email: "user@example.com",
     friends: ["Alice", "Bob"],
     createdAt: new Date(2023, 0, 1),
